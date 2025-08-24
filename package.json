@@ -1,22 +1,36 @@
 {
-  "name": "koishi-plugin-sleep-shiyi",
-  "description": "A sleep-shiyi plugin for koishi",
-  "version": "0.0.1",
+  "name": "koishi-plugin-sleep-record",
+  "version": "1.0.0",
+  "description": "Koishi睡眠记录插件，用于记录用户的睡眠情况并提供统计分析",
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
   "files": [
     "lib",
     "dist"
   ],
-  "license": "MIT",
-  "scripts": {},
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "prepack": "tsc"
+  },
   "keywords": [
-    "chatbot",
     "koishi",
-    "plugin"
+    "plugin",
+    "sleep",
+    "record"
   ],
-  "devDependencies": {},
+  "author": "",
+  "license": "MIT",
   "peerDependencies": {
-    "koishi": "^4.18.7"
+    "koishi": "^4.17.0"
+  },
+  "dependencies": {
+    "dayjs": "^1.11.11",
+    "sequelize": "^6.37.7",
+    "sqlite3": "^5.1.7"
+  },
+  "devDependencies": {
+    "@types/node": "^20.12.12",
+    "typescript": "^5.4.5"
   }
 }
