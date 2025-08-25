@@ -1,5 +1,5 @@
 {
-  "name": "koishi-plugin-sleep-record",
+  "name": "koishi-plugin-sleep-shiyi",
   "version": "1.0.0",
   "description": "Koishi睡眠记录插件，用于记录用户的睡眠情况并提供统计分析",
   "main": "lib/index.js",
@@ -30,7 +30,9 @@
     "sqlite3": "^5.1.7"
   },
   "devDependencies": {
+    "@types/jest": "^30.0.0",
     "@types/node": "^20.12.12",
+    "ts-jest": "^29.4.1",
     "typescript": "^5.4.5"
   }
 }
