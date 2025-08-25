@@ -248,12 +248,12 @@ function registerFeatures(ctx: Context, config: Config) {
       const currentCount = todayRecords.length
       const newCount = currentCount + 1
 
-      // 【关键】检查今日未完成记录（仅匹配wakeTime为NULL，适配SQLite）
+      // 【关键】检查今日未完成记录（匹配空字符串 wakeTime）
       const unfinishedRecords = await ctx.database.get(sleepTableName, (row: Row<SleepRecord>) =>
         $.and(
           $.eq(row.uid, uid),
           $.eq(row.date, today),
-          $.eq(row.wakeTime, null) // 仅查NULL，与创建时状态一致
+          $.eq(row.wakeTime, '') // 检查空字符串
         )
       ) as SleepRecord[]
 
@@ -264,12 +264,12 @@ function registerFeatures(ctx: Context, config: Config) {
 
       // 事务创建记录+更新用户（显式设置wakeTime为NULL）
       const newRecord = await ctx.database.transact(async (tx) => {
-        // 创建睡眠记录，wakeTime明确设为NULL（id由自增自动生成）
+        // 创建睡眠记录，wakeTime明确设为空字符串（id由自增自动生成）
         const record = await tx.create(sleepTableName, {
           uid,
           sleepTime: now.toISOString(),
           date: today,
-          wakeTime: null,
+          wakeTime: '', // 使用空字符串代替null
           duration: null,
         }) as SleepRecord
 
@@ -331,53 +331,15 @@ function registerFeatures(ctx: Context, config: Config) {
       const yesterday = dayjs(now).subtract(1, 'day').format('YYYY-MM-DD')
       ctx.logger.debug(`[早安] 日期范围 - 今天: ${today}, 昨天: ${yesterday}`)
 
-      // 【关键】统一查询条件（仅匹配wakeTime为NULL，覆盖当天+昨天）
-      const baseCondition = (row: Row<SleepRecord>) => $.and(
-        $.eq(row.uid, uid),
-        $.eq(row.wakeTime, null), // 与晚安创建的状态一致
-        $.or($.eq(row.date, today), $.eq(row.date, yesterday)) // 跨天兜底
-      )
+      // 【关键】简化查询：直接查找用户最新的一条未完成记录
+      const sleepRecords = await ctx.database.get(sleepTableName, (row: Row<SleepRecord>) =>
+        $.and(
+          $.eq(row.uid, uid),
+          $.eq(row.wakeTime, '') // 核心条件：未完成（检查空字符串）
+        )
+      , { sort: { sleepTime: 'desc' }, limit: 1 }) as SleepRecord[] // 核心逻辑：按入睡时间降序，取最新一条
 
-      // 初始化睡眠记录数组
-      let sleepRecords: SleepRecord[] = []
-
-      // 策略1：按lastSleepId精准查询（最快）
-      let validLastSleepId = user.lastSleepId
-
-      if (validLastSleepId) {
-        // 直接使用lastSleepId查询，不再额外校验
-        sleepRecords = await ctx.database.get(sleepTableName, (row: Row<SleepRecord>) =>
-          $.and(
-            $.eq(row.id, validLastSleepId),
-            $.eq(row.uid, uid),
-            $.eq(row.wakeTime, null)
-          )
-        ) as SleepRecord[]
-        ctx.logger.debug(`[早安] 策略1结果 - 记录数: ${sleepRecords.length}, 目标ID: ${validLastSleepId}`)
-      }
-
-      // 策略2：如果lastSleepId无效，查询当天+昨天的未完成记录
-      if (!sleepRecords.length) {
-        sleepRecords = await ctx.database.get(sleepTableName, (row: Row<SleepRecord>) =>
-          $.and(
-            $.eq(row.uid, uid),
-            $.eq(row.wakeTime, null),
-            $.or($.eq(row.date, today), $.eq(row.date, yesterday))
-          )
-        , { sort: { sleepTime: 'desc' }, limit: 1 }) as SleepRecord[]
-        ctx.logger.debug(`[早安] 策略2结果 - 记录数: ${sleepRecords.length}`)
-      }
-
-      // 策略3：如果仍未找到，查询用户所有未完成记录
-      if (!sleepRecords.length) {
-        sleepRecords = await ctx.database.get(sleepTableName, (row: Row<SleepRecord>) =>
-          $.and(
-            $.eq(row.uid, uid),
-            $.eq(row.wakeTime, null)
-          )
-        , { sort: { sleepTime: 'desc' }, limit: 1 }) as SleepRecord[]
-        ctx.logger.debug(`[早安] 策略3结果 - 记录数: ${sleepRecords.length}`)
-      }
+      ctx.logger.debug(`[早安] 简化查询结果 - 记录数: ${sleepRecords.length}`)
 
 
 
