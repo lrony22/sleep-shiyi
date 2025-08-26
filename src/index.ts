@@ -114,14 +114,19 @@ function getSafeUserId(session: Session, ctx: Context): number | null {
     return session.uid
   }
 
-  // 2. 适配OneBot平台（QQ/微信等）
-  if (session.platform === 'onebot') {
-    const event = session.event as any
-    if (event?.user_id) {
-      const uid = Number(event.user_id)
-      if (uid > 0) return uid
+// 2. 适配OneBot平台（QQ/微信等）
+if (session.platform === 'onebot') {
+  const event = session.event as any;
+  // 优先从event取user_id，若无则从session.userId取（修复日志中userId存在但识别失败的问题）
+  let userIdStr = event?.user_id?.toString() || session.userId?.toString();
+  if (userIdStr) {
+    const uid = Number(userIdStr);
+    if (uid > 0) {
+      ctx.logger.debug(`[getSafeUserId] 从OneBot平台获取: ${uid}（来源：${event?.user_id ? 'event.user_id' : 'session.userId'}）`);
+      return uid;
     }
   }
+}
 
   // 3. 适配QQ频道
   if (session.platform === 'qqguild') {
