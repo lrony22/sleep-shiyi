@@ -9,17 +9,7 @@ Koishi 睡眠记录插件，用于记录用户的睡眠情况并提供统计分�
 - 提供个人睡眠数据查询和统计分析
 - 支持日、周、月睡眠时长排行榜
 
-## 安装方法
 
-1. 在 Koishi 应用中安装此插件：npm install koishi-plugin-sleep-record
-2. 在 Koishi 配置文件中启用插件：module.exports = {
-  plugins: {
-    'sleep-record': {
-      // 可选配置，指定数据库文件路径
-      // databasePath: 'sleep-record.db'
-    }
-  }
-}
 ## 使用说明
 
 - **记录入睡**：发送"晚安"、"睡觉"、"睡了"等关键词
