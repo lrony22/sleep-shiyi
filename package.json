@@ -19,8 +19,22 @@
     "sleep",
     "record"
   ],
-  "author": "",
+  "author": "shiyi",
+  "contributors": [
+    "shiyi <q2824584818@163.com"
+  ],
   "license": "MIT",
+  "homepage": "https://github.com/lrony22/sleep-shiyi",
+  "repository": {
+    "type": "git",
+    "url": "git + https://github.com/lrony22/sleep-shiyi.git"
+  },
+  "kyewords": [
+    "koishi",
+    "plugin",
+    "sleep",
+    "shiyi"
+  ],
   "peerDependencies": {
     "koishi": "^4.17.0"
   },
