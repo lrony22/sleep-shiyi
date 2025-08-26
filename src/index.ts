@@ -207,7 +207,7 @@ function initModels(ctx: Context) {
     ],
   })
 
-  ctx.logger.info(`[${name}] 数据库模型初始化完成（完全符合Koishi规范）`)
+  ctx.logger.info(`[${name}] 数据库模型初始化完成`)
 }
 
 // -------------------------- 6. 核心功能实现 --------------------------
@@ -549,5 +549,5 @@ export function apply(ctx: Context, config: Config) {
   initModels(ctx)
   registerFeatures(ctx, config)
 
-  ctx.logger.info(`[${name}] 插件加载完成（最终稳定版）`)
+  ctx.logger.info(`[${name}] 插件加载完成`)
 }
