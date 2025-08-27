@@ -420,14 +420,27 @@ function registerFeatures(ctx: Context, config: Config) {
         case 'month': startDate = dayjs().subtract(1, 'month').format('YYYY-MM-DD'); title = '本月'; break
       }
 
-      // 查询有效记录（仅完成的记录）
-      const records = await ctx.database.get(sleepTableName, (row: Row<SleepRecord>) =>
-        $.and(
-          $.ne(row.duration, null), // 排除未完成记录
-          $.gte(row.date, startDate),
-          $.lte(row.date, endDate)
-        )
-      ) as SleepRecord[]
+      const records = await ctx.database.get(sleepTableName, (row: Row<SleepRecord>) => {
+        const baseCondition = $.gt(row.duration, 0); // 确保记录已完成
+
+        if (timeType === 'day') {
+          // 每日排行：包含入睡或起床是今天的记录
+          return $.and(
+            baseCondition,
+            $.or(
+              $.eq(row.date, startDate),
+              $.regex(row.wakeTime, `^${startDate}`) // 使用正则匹配日期的开头
+            )
+          );
+        } else {
+          // 每周/月排行：只看入睡时间
+          return $.and(
+            baseCondition,
+            $.gte(row.date, startDate),
+            $.lte(row.date, endDate)
+          );
+        }
+      }) as SleepRecord[]
       if (!records.length) return tips.emptyRecord
 
       // 统计用户数据
